@@ -1,7 +1,7 @@
 interface IUserRole {
     id: number;
     roleNumber: string;
-    name: number;
+    name: string;
 }
 
 export default IUserRole;

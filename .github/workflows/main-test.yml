@@ -1,0 +1,37 @@
+name: main-test
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  running-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 20.x ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: pwd
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: mysql start
+        run: sudo systemctl start mysql.service
+
+      - name: mysql set global config
+        run: mysql -h 127.0.0.1 --port 3306 -u root --password="root" -e "SET GLOBAL sql_mode='NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
+
+      - run: npm i
+
+      - run: npx sequelize-cli db:create;
+      - run: npx ts-node tests/db/init_db.ts;
+      - run: npx sequelize-cli db:seed:all;
+
+      - run: npm run test:github
